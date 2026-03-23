@@ -30,45 +30,40 @@ import androidx.compose.ui.unit.sp
 import com.example.transportdocumentscanner.R
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToManualLoading: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(top = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        HeaderImage()
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(modifier = Modifier.height(90.dp))
         TitleApp()
-        Spacer(modifier = Modifier.height(50.dp))
+        Spacer(modifier = Modifier.height(65.dp))
         DropdownMenu()
-        Spacer(modifier = Modifier.height(80.dp))
-        RegistrationMethods()
+        Spacer(modifier = Modifier.height(160.dp))
+        RegistrationMethods(navigateToManualLoading)
     }
 }
 
 @Composable
-fun RegistrationMethods() {
+fun RegistrationMethods(navigateToManualLoading: () -> Unit) {
     Text(
         text = "Metodos de registro",
         fontSize = 18.sp
     )
-    ButtonRegistrationMethod("Subir PDF")
-    ButtonRegistrationMethod("Escanear documento")
-    ButtonRegistrationMethod("Subir foto")
-    ButtonRegistrationMethod("Registrar manualmente")
+    ButtonRegistrationMethod("Subir PDF", navigateTo = {})
+    ButtonRegistrationMethod("Escanear documento", navigateTo = {})
+    ButtonRegistrationMethod("Subir foto", navigateTo = {})
+    ButtonRegistrationMethod("Registrar manualmente",navigateTo = {navigateToManualLoading()})
 }
 
 @Composable
-fun ButtonRegistrationMethod(method: String) {
+fun ButtonRegistrationMethod(method: String, navigateTo: () -> Unit) {
     Spacer(modifier = Modifier.height(30.dp))
     Button(
-        onClick = {},
+        onClick = { navigateTo() },
         modifier = Modifier.height(85.dp).width(380.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF2E7631),
-            contentColor = Color.White
-        )
     ) {
         Text(
             text = method,
@@ -125,20 +120,7 @@ fun TitleApp() {
     Text(
         text = "Transport Document Scanner",
         fontSize = 30.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color(0xFF2E7631)
+        fontWeight = FontWeight.Bold
     )
 }
 
-@Composable
-fun HeaderImage(modifier: Modifier = Modifier) {
-    val image = painterResource(R.drawable.truck_icon)
-    Image(
-        painter = image,
-        contentDescription = null,
-        modifier = modifier
-            .height(180.dp)
-            .width(180.dp),
-        alignment = Alignment.Center
-    )
-}
