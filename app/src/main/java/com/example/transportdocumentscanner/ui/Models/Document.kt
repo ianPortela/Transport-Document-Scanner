@@ -1,20 +1,13 @@
 package com.example.transportdocumentscanner.ui.Models
 
-class Document(
-    val idDocument : Int,
-    var date : String,
-    var pickupLocation : String,
-    var unloadingLocation : String,
-    var distance : Int,
-    var product : String,
-    var weight : Int,
-    var tariff : Double,
-    val documentType : DocumentType
-) {
-    var amount : Double
-
-    init {
-        this.amount = weight * tariff
-    }
-
-}
+data class Document(
+    var idDocument : String = "",
+    var date : String = "",
+    var origin : String = "",
+    var destiny : String = "",
+    var distance : String = "",
+    var product : String = "",
+    var weight : String = "",
+    var rate : String = "",
+    var amount : String = ""
+)
