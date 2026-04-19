@@ -37,11 +37,11 @@ fun HomeScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToManualLoad
             .padding(top = 80.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(90.dp))
+        Spacer(modifier = Modifier.height(60.dp))
         TitleApp()
         Spacer(modifier = Modifier.height(65.dp))
         DropdownMenu()
-        Spacer(modifier = Modifier.height(160.dp))
+        Spacer(modifier = Modifier.height(100.dp))
         RegistrationMethods(navigateToManualLoading)
     }
 }
@@ -52,14 +52,29 @@ fun RegistrationMethods(navigateToManualLoading: () -> Unit) {
         text = "Metodos de registro",
         fontSize = 18.sp
     )
-    ButtonRegistrationMethod("Subir PDF", navigateTo = {})
-    ButtonRegistrationMethod("Escanear documento", navigateTo = {})
-    ButtonRegistrationMethod("Subir foto", navigateTo = {})
-    ButtonRegistrationMethod("Registrar manualmente",navigateTo = {navigateToManualLoading()})
+    ButtonRegistrationMethod("Subir PDF", action = {})
+    ButtonRegistrationMethod("Escanear documento", action = {})
+    ButtonRegistrationMethod("Subir foto", action = {})
+    ButtonManualRegistration("Registrar manualmente",navigateTo = {navigateToManualLoading()})
 }
 
 @Composable
-fun ButtonRegistrationMethod(method: String, navigateTo: () -> Unit) {
+fun ButtonRegistrationMethod(method: String, action: () -> Unit) {
+    Spacer(modifier = Modifier.height(30.dp))
+    Button(
+        //action va a ser la forma de registro dependiendo que metodo se elija
+        onClick = { action() },
+        modifier = Modifier.height(85.dp).width(380.dp),
+    ) {
+        Text(
+            text = method,
+            fontSize = 20.sp
+        )
+    }
+}
+
+@Composable
+fun ButtonManualRegistration(method: String, navigateTo: () -> Unit) {
     Spacer(modifier = Modifier.height(30.dp))
     Button(
         onClick = { navigateTo() },
