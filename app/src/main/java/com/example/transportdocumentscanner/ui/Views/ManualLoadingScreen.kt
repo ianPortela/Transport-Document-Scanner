@@ -46,6 +46,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.apache.poi.ss.usermodel.BorderStyle
+import org.apache.poi.ss.usermodel.CellStyle
+import org.apache.poi.ss.usermodel.FillPatternType
+import org.apache.poi.ss.usermodel.HorizontalAlignment
+import org.apache.poi.ss.usermodel.IndexedColors
+import org.apache.poi.ss.usermodel.VerticalAlignment
+import org.apache.poi.xssf.usermodel.XSSFCellStyle
+import org.apache.poi.xssf.usermodel.XSSFRow
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
@@ -53,10 +61,10 @@ fun ManualLoadingScreen(modifier:Modifier = Modifier.fillMaxSize(), ) {
 
     var document by remember { mutableStateOf(Document()) }
     val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }  // 👈
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(  // 👈 Scaffold es necesario para que el Snackbar aparezca bien posicionado
+    Scaffold(  //Scaffold es necesario para que el Snackbar aparezca bien posicionado
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
@@ -75,8 +83,8 @@ fun ManualLoadingScreen(modifier:Modifier = Modifier.fillMaxSize(), ) {
             InputFields(
                 document = document,
                 context = context,
-                snackbarHostState = snackbarHostState,  // 👈
-                scope = scope,                          // 👈
+                snackbarHostState = snackbarHostState,
+                scope = scope,
                 onDocumentChange = { document = it },
                 onClear = { document = Document() }
             )
@@ -98,42 +106,42 @@ fun InputFields(
     Input("Fecha", document.date) {
         onDocumentChange(document.copy(date = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("Origen de carga", document.origin) {
         onDocumentChange(document.copy(origin = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("Destino de carga", document.destiny) {
         onDocumentChange(document.copy(destiny = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("Distancia", document.distance) {
         onDocumentChange(document.copy(distance = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("Producto", document.product) {
         onDocumentChange(document.copy(product = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("Peso", document.weight) {
         onDocumentChange(document.copy(weight = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("ID del documento", document.idDocument) {
         onDocumentChange(document.copy(idDocument = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("Tarifa", document.rate) {
         onDocumentChange(document.copy(rate = it))
     }
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(modifier = Modifier.height(18.dp))
 
     Input("Importe", document.amount) {
         onDocumentChange(document.copy(amount = it))
@@ -152,7 +160,7 @@ fun InputFields(
                 val result = snackbarHostState.showSnackbar(
                     message = "Registro guardado",
                     actionLabel = "Abrir",
-                    duration = SnackbarDuration.Long
+                    duration = SnackbarDuration.Short
                 )
 
                 // Si el usuario tocó "Abrir"
@@ -180,8 +188,6 @@ fun InputFields(
 
 @Composable
 fun Input(label:String, value:String, onValueChange: (String) -> Unit) {
-
-    Spacer(modifier = Modifier.height(10.dp)) //revisar esta linea y ver si es necesaria, en inputField ya hay un spacer
     TextField(
         value = value,
         onValueChange = onValueChange,
@@ -195,10 +201,10 @@ fun writeExcel(context: Context, doc: Document): Uri? {
     val fileName = "Registro_Viajes.xlsx"
     val resolver = context.contentResolver
 
-    // 1. Buscar si el archivo ya existe en Downloads
+    //Buscar si el archivo ya existe en Downloads
     val existingUri: Uri? = findExistingFile(resolver, fileName)
 
-    // 2. Abrir workbook existente o crear uno nuevo
+    //Abrir workbook existente o crear uno nuevo
     val workbook: XSSFWorkbook = if (existingUri != null) {
         resolver.openInputStream(existingUri).use { inputStream ->
             XSSFWorkbook(inputStream)
@@ -207,40 +213,65 @@ fun writeExcel(context: Context, doc: Document): Uri? {
         XSSFWorkbook()
     }
 
-    // 3. Buscar la hoja del mes actual o crearla
+    //Buscar la hoja del mes actual o crearla
     val monthName = LocalDate.now().month.toString()
     val sheet: XSSFSheet = workbook.getSheet(monthName) ?: workbook.createSheet(monthName)
 
-    // 4. Agregar fila al final (no siempre en la 0)
+    //Agregar fila al final (no siempre en la 0)
     var newRowIndex = if (sheet.physicalNumberOfRows == 0) 0 else sheet.lastRowNum + 1
+
+    //Creamos los estilos para la hoja
+    val headerStyle: XSSFCellStyle = workbook.createCellStyle()
+    //Bordes
+    headerStyle.borderTop = BorderStyle.THIN
+    headerStyle.borderRight = BorderStyle.THIN
+    headerStyle.borderLeft = BorderStyle.THIN
+    headerStyle.borderBottom = BorderStyle.THIN
+    //Centramos textp
+    headerStyle.alignment = HorizontalAlignment.CENTER
+    headerStyle.verticalAlignment = VerticalAlignment.CENTER
+    //Asignamos un color
+    //Indicamos el color de la celda
+    headerStyle.fillForegroundColor = IndexedColors.LIGHT_BLUE.index
+    //Es necesario aplicar el pattern, ya que, de lo contrario no aplicara el color
+    headerStyle.fillPattern = FillPatternType.SOLID_FOREGROUND
+
+    val bodyStyle: XSSFCellStyle = workbook.createCellStyle()
+    //bordes
+    bodyStyle.borderTop = BorderStyle.THIN
+    bodyStyle.borderRight = BorderStyle.THIN
+    bodyStyle.borderLeft = BorderStyle.THIN
+    bodyStyle.borderBottom = BorderStyle.THIN
 
     if(newRowIndex == 0) {
         val row = sheet.createRow(newRowIndex)
-        row.createCell(0).setCellValue("FECHA")
-        row.createCell(1).setCellValue("ORIGEN")
-        row.createCell(2).setCellValue("DESTINO")
-        row.createCell(3).setCellValue("DISTANCIA")
-        row.createCell(4).setCellValue("PRODUCTO")
-        row.createCell(5).setCellValue("PESO")
-        row.createCell(6).setCellValue("Nro. REMITO / CTG")
-        row.createCell(7).setCellValue("TARIFA")
-        row.createCell(8).setCellValue("MONTO")
+
+        writeRow(0, row, "FECHA", headerStyle)
+        writeRow(1, row, "ORIGEN", headerStyle)
+        writeRow(2, row, "DESTINO", headerStyle)
+        writeRow(3, row, "DISTANCIA", headerStyle)
+        writeRow(4, row, "PRODUCTO", headerStyle)
+        writeRow(5, row, "PESO", headerStyle)
+        writeRow(6, row, "Nro. REMITO / CTG", headerStyle)
+        writeRow(7, row, "TARIFA", headerStyle)
+        writeRow(8, row, "MONTO", headerStyle)
 
         newRowIndex += 1
     }
 
     val row = sheet.createRow(newRowIndex)
-    row.createCell(0).setCellValue(doc.date)
-    row.createCell(1).setCellValue(doc.origin)
-    row.createCell(2).setCellValue(doc.destiny)
-    row.createCell(3).setCellValue(doc.distance)
-    row.createCell(4).setCellValue(doc.product)
-    row.createCell(5).setCellValue(doc.weight)
-    row.createCell(6).setCellValue(doc.idDocument)
-    row.createCell(7).setCellValue(doc.rate)
-    row.createCell(8).setCellValue(doc.amount)
 
-    // 5. Escribir sobre el archivo existente o crear uno nuevo
+    writeRow(0, row, doc.date, bodyStyle)
+    writeRow(1, row, doc.origin, bodyStyle)
+    writeRow(2, row, doc.destiny, bodyStyle)
+    writeRow(3, row, doc.distance, bodyStyle)
+    writeRow(4, row, doc.product, bodyStyle)
+    writeRow(5, row, doc.weight, bodyStyle)
+    writeRow(6, row, doc.idDocument, bodyStyle)
+    writeRow(7, row, doc.rate, bodyStyle)
+    writeRow(8, row, doc.amount, bodyStyle)
+
+    //Escribir sobre el archivo existente o crear uno nuevo
     val targetUri: Uri? = if (existingUri != null) {
         resolver.openOutputStream(existingUri, "wt").use { outputStream ->
             workbook.write(outputStream)
@@ -255,6 +286,9 @@ fun writeExcel(context: Context, doc: Document): Uri? {
         val newUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
         newUri?.let {
             resolver.openOutputStream(it).use { outputStream ->
+                for(i in 0..8){
+                    sheet.setColumnWidth(i, 5800)
+                }
                 workbook.write(outputStream)
             }
         }
@@ -285,4 +319,11 @@ private fun findExistingFile(resolver: ContentResolver, fileName: String): Uri? 
         }
     }
     return null
+}
+
+private fun writeRow(columnIndex: Int, row: XSSFRow, value: String, style: XSSFCellStyle) {
+    row.createCell(columnIndex).apply{
+        setCellValue(value)
+        cellStyle = style
+    }
 }
