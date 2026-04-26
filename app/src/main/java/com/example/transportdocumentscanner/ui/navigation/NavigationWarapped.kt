@@ -17,13 +17,13 @@ fun NavigationWarapped() {
     NavHost(navController = navController, startDestination = Home) {
         composable<Home> {
             HomeScreen(
-                navigateToManualLoading = {
-                    navController.navigate(LoadingScreen)
-                }
+                navigateToManualLoading = { navController.navigate(LoadingScreen) }
             )
         }
         composable<LoadingScreen> {
-            ManualLoadingScreen()
+            ManualLoadingScreen(
+                navigateToHome = { navController.navigate(Home) }
+            )
         }
     }
 }

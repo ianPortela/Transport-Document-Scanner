@@ -5,19 +5,26 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -47,7 +54,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.apache.poi.ss.usermodel.BorderStyle
-import org.apache.poi.ss.usermodel.CellStyle
 import org.apache.poi.ss.usermodel.FillPatternType
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.IndexedColors
@@ -57,7 +63,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun ManualLoadingScreen(modifier:Modifier = Modifier.fillMaxSize(), ) {
+fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToHome: () -> Unit, ) {
 
     var document by remember { mutableStateOf(Document()) }
     val context = LocalContext.current
@@ -74,11 +80,23 @@ fun ManualLoadingScreen(modifier:Modifier = Modifier.fillMaxSize(), ) {
                 .padding(top = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Registro Manual de Datos",
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = navigateToHome,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Volver al inicio"
+                    )
+                }
+                Text(
+                    text = "Registro Manual de Datos",
+                    fontSize = 30.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Spacer(modifier = Modifier.height(40.dp))
             InputFields(
                 document = document,
