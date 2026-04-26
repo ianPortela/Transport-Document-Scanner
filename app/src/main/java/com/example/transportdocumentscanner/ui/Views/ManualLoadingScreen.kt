@@ -17,9 +17,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -77,7 +80,9 @@ fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToH
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(top = 40.dp),
+                .padding(top = 40.dp)
+                .verticalScroll(rememberScrollState())
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
@@ -210,7 +215,7 @@ fun Input(label:String, value:String, onValueChange: (String) -> Unit) {
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        modifier = Modifier.width(400.dp)
+        modifier = Modifier.width(360.dp)
     )
 }
 
