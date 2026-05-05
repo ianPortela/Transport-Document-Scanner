@@ -1,4 +1,4 @@
-package com.example.transportdocumentscanner.ui.navigation
+package com.example.transportdocumentscanner.ui.Navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
