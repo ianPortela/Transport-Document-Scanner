@@ -52,6 +52,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.time.LocalDate
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.transportdocumentscanner.ui.Views.State.DocumentState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,7 +69,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow
 @Composable
 fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToHome: () -> Unit, ) {
 
-    var document by remember { mutableStateOf(Document()) }
+    var document by remember { mutableStateOf(DocumentState()) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -109,7 +110,7 @@ fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToH
                 snackbarHostState = snackbarHostState,
                 scope = scope,
                 onDocumentChange = { document = it },
-                onClear = { document = Document() }
+                onClear = { document = DocumentState() }
             )
         }
     }
@@ -118,11 +119,11 @@ fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToH
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun InputFields(
-    document: Document,
+    document: DocumentState,
     context: Context,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
-    onDocumentChange: (Document) -> Unit,
+    onDocumentChange: (DocumentState) -> Unit,
     onClear: () -> Unit
 )
 {
@@ -220,7 +221,7 @@ fun Input(label:String, value:String, onValueChange: (String) -> Unit) {
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
-fun writeExcel(context: Context, doc: Document): Uri? {
+fun writeExcel(context: Context, doc: DocumentState): Uri? {
     val fileName = "Registro_Viajes.xlsx"
     val resolver = context.contentResolver
 

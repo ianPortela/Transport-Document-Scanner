@@ -1,4 +1,4 @@
-package com.example.transportdocumentscanner.ui.navigation
+package com.example.transportdocumentscanner.ui.Navigation
 
 import kotlinx.serialization.Serializable
 
