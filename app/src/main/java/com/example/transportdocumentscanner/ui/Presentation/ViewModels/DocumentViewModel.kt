@@ -1,7 +1,7 @@
-package com.example.transportdocumentscanner.ui.ViewModels
+package com.example.transportdocumentscanner.ui.Presentation.ViewModels
 
 import androidx.lifecycle.ViewModel
-import com.example.transportdocumentscanner.ui.Views.State.DocumentState
+import com.example.transportdocumentscanner.ui.Presentation.State.DocumentState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

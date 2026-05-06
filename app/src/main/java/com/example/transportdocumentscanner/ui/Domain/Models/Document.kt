@@ -1,4 +1,4 @@
-package com.example.transportdocumentscanner.ui.Models
+package com.example.transportdocumentscanner.ui.Domain.Models
 
 
 data class Document(

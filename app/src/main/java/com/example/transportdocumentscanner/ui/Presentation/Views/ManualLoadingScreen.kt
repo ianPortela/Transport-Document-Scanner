@@ -1,11 +1,10 @@
-package com.example.transportdocumentscanner.ui.Views
+package com.example.transportdocumentscanner.ui.Presentation.Views
 
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -38,9 +37,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,13 +45,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.transportdocumentscanner.ui.Models.Document
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.time.LocalDate
 import androidx.compose.runtime.rememberCoroutineScope
-import com.example.transportdocumentscanner.ui.ViewModels.DocumentViewModel
-import com.example.transportdocumentscanner.ui.Views.State.DocumentState
+import com.example.transportdocumentscanner.ui.Presentation.ViewModels.DocumentViewModel
+import com.example.transportdocumentscanner.ui.Presentation.State.DocumentState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
