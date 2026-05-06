@@ -1,4 +1,4 @@
-package com.example.transportdocumentscanner.ui.Views.State
+package com.example.transportdocumentscanner.ui.Presentation.State
 
 data class DocumentState (
     var idDocument : String = "",

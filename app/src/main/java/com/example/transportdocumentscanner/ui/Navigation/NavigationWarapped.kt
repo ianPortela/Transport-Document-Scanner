@@ -6,8 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.transportdocumentscanner.ui.Views.HomeScreen
-import com.example.transportdocumentscanner.ui.Views.ManualLoadingScreen
+import com.example.transportdocumentscanner.ui.Presentation.Views.HomeScreen
+import com.example.transportdocumentscanner.ui.Presentation.Views.ManualLoadingScreen
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
