@@ -36,6 +36,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,6 +53,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.time.LocalDate
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.transportdocumentscanner.ui.ViewModels.DocumentViewModel
 import com.example.transportdocumentscanner.ui.Views.State.DocumentState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,9 +69,11 @@ import org.apache.poi.xssf.usermodel.XSSFRow
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
-fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToHome: () -> Unit, ) {
+fun ManualLoadingScreen(
+    modifier: Modifier = Modifier.fillMaxSize(),
+    navigateToHome: () -> Unit, ) {
 
-    var document by remember { mutableStateOf(DocumentState()) }
+    val viewModel = DocumentViewModel()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -104,13 +108,16 @@ fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToH
                 )
             }
             Spacer(modifier = Modifier.height(40.dp))
+
+            val doc by viewModel.doc.collectAsState()
+
             InputFields(
-                document = document,
+                doc = doc,
+                viewModel = viewModel,
                 context = context,
                 snackbarHostState = snackbarHostState,
                 scope = scope,
-                onDocumentChange = { document = it },
-                onClear = { document = DocumentState() }
+                onClear = { viewModel.onClear() }
             )
         }
     }
@@ -119,63 +126,92 @@ fun ManualLoadingScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToH
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun InputFields(
-    document: DocumentState,
+    doc: DocumentState,
+    viewModel: DocumentViewModel,
     context: Context,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
-    onDocumentChange: (DocumentState) -> Unit,
     onClear: () -> Unit
 )
 {
-    Input("Fecha", document.date) {
-        onDocumentChange(document.copy(date = it))
-    }
+
+    TextField(
+        value = doc.date,
+        onValueChange = viewModel::onDateChange,
+        label = { Text("Fecha") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("Origen de carga", document.origin) {
-        onDocumentChange(document.copy(origin = it))
-    }
+    TextField(
+        value = doc.origin,
+        onValueChange = viewModel::onOriginChange,
+        label = { Text("Origen de Carga") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("Destino de carga", document.destiny) {
-        onDocumentChange(document.copy(destiny = it))
-    }
+    TextField(
+        value = doc.destiny,
+        onValueChange = viewModel::onDestinyChange,
+        label = { Text("Destino de Carga") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("Distancia", document.distance) {
-        onDocumentChange(document.copy(distance = it))
-    }
+    TextField(
+        value = doc.distance,
+        onValueChange = viewModel::onDistanceChange,
+        label = { Text("Distancia") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("Producto", document.product) {
-        onDocumentChange(document.copy(product = it))
-    }
+    TextField(
+        value = doc.product,
+        onValueChange = viewModel::onProductChange,
+        label = { Text("Producto") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("Peso", document.weight) {
-        onDocumentChange(document.copy(weight = it))
-    }
+    TextField(
+        value = doc.weight,
+        onValueChange = viewModel::onWeightChange,
+        label = { Text("Peso") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("ID del documento", document.idDocument) {
-        onDocumentChange(document.copy(idDocument = it))
-    }
+    TextField(
+        value = doc.idDocument,
+        onValueChange = viewModel::onIdDocumentChange,
+        label = { Text("CTG / Nro. de Remito") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("Tarifa", document.rate) {
-        onDocumentChange(document.copy(rate = it))
-    }
+    TextField(
+        value = doc.rate,
+        onValueChange = viewModel::onRateChange,
+        label = { Text("Tarifa") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(18.dp))
 
-    Input("Importe", document.amount) {
-        onDocumentChange(document.copy(amount = it))
-    }
+    TextField(
+        value = doc.amount,
+        onValueChange = viewModel::onAmountChange,
+        label = { Text("Importe") },
+        modifier = Modifier.width(360.dp)
+    )
     Spacer(modifier = Modifier.height(40.dp))
+
     Button(
         onClick = {
             scope.launch {
                 val uri = withContext(Dispatchers.IO) {
-                    writeExcel(context, document)
+                    writeExcel(context, doc)
                 }
 
                 onClear()
@@ -208,16 +244,6 @@ fun InputFields(
                 .wrapContentHeight(Alignment.CenterVertically)
         )
     }
-}
-
-@Composable
-fun Input(label:String, value:String, onValueChange: (String) -> Unit) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        modifier = Modifier.width(360.dp)
-    )
 }
 
 @RequiresApi(Build.VERSION_CODES.Q)
