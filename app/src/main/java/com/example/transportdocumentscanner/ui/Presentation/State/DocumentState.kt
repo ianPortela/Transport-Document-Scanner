@@ -9,5 +9,6 @@ data class DocumentState (
     var product : String = "",
     var weight : String = "",
     var rate : String = "",
-    var amount : String = ""
+    var amount : String = "",
+    val errors: Map<String, String> = emptyMap()
 )

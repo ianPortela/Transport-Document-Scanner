@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.time.LocalDate
@@ -67,9 +68,9 @@ import org.apache.poi.xssf.usermodel.XSSFRow
 @Composable
 fun ManualLoadingScreen(
     modifier: Modifier = Modifier.fillMaxSize(),
-    navigateToHome: () -> Unit, ) {
+    navigateToHome: () -> Unit,
+    viewModel: DocumentViewModel = DocumentViewModel()) {
 
-    val viewModel = DocumentViewModel()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -135,8 +136,12 @@ fun InputFields(
         value = doc.date,
         onValueChange = viewModel::onDateChange,
         label = { Text("Fecha") },
-        modifier = Modifier.width(360.dp)
+        modifier = Modifier.width(360.dp),
+        isError = doc.errors.containsKey("idDocument")
     )
+    doc.errors["date"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -145,6 +150,9 @@ fun InputFields(
         label = { Text("Origen de Carga") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["origin"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -153,6 +161,9 @@ fun InputFields(
         label = { Text("Destino de Carga") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["destiny"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -161,6 +172,9 @@ fun InputFields(
         label = { Text("Distancia") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["distance"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -169,6 +183,9 @@ fun InputFields(
         label = { Text("Producto") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["product"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -177,6 +194,9 @@ fun InputFields(
         label = { Text("Peso") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["weight"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -185,6 +205,9 @@ fun InputFields(
         label = { Text("CTG / Nro. de Remito") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["idDocument"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -193,6 +216,9 @@ fun InputFields(
         label = { Text("Tarifa") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["rate"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(18.dp))
 
     TextField(
@@ -201,31 +227,38 @@ fun InputFields(
         label = { Text("Importe") },
         modifier = Modifier.width(360.dp)
     )
+    doc.errors["amount"]?.let {
+        Text(text = it, color = Color.Red)
+    }
     Spacer(modifier = Modifier.height(40.dp))
 
     Button(
         onClick = {
             scope.launch {
-                val uri = withContext(Dispatchers.IO) {
-                    writeExcel(context, doc)
-                }
+                val result = viewModel.validate()
 
-                onClear()
+                if (result.isValid) {
 
-                // Mostrar Snackbar con acción
-                val result = snackbarHostState.showSnackbar(
-                    message = "Registro guardado",
-                    actionLabel = "Abrir",
-                    duration = SnackbarDuration.Short
-                )
-
-                // Si el usuario tocó "Abrir"
-                if (result == SnackbarResult.ActionPerformed && uri != null) {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        setDataAndType(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    val uri = withContext(Dispatchers.IO) {
+                        writeExcel(context, doc)
                     }
-                    context.startActivity(intent)
+
+                    onClear()
+
+                    val snackbarResult = snackbarHostState.showSnackbar(
+                        message = "Registro guardado",
+                        actionLabel = "Abrir",
+                        duration = SnackbarDuration.Short
+                    )
+
+                    if (snackbarResult == SnackbarResult.ActionPerformed && uri != null) {
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(intent)
+                    }
+
                 }
             }
         }
@@ -333,7 +366,7 @@ fun writeExcel(context: Context, doc: DocumentState): Uri? {
         newUri?.let {
             resolver.openOutputStream(it).use { outputStream ->
                 for(i in 0..8){
-                    sheet.setColumnWidth(i, 5800)
+                    sheet.setColumnWidth(i, 6000)
                 }
                 workbook.write(outputStream)
             }
