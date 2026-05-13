@@ -240,7 +240,7 @@ fun InputFields(
                 if (result.isValid) {
 
                     val uri = withContext(Dispatchers.IO) {
-                        writeExcel(context, doc)
+                        viewModel.writeExcel(context, doc)
                     }
 
                     onClear()
@@ -275,7 +275,7 @@ fun InputFields(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.Q)
+/*@RequiresApi(Build.VERSION_CODES.Q)
 fun writeExcel(context: Context, doc: DocumentState): Uri? {
     val fileName = "Registro_Viajes.xlsx"
     val resolver = context.contentResolver
@@ -405,4 +405,4 @@ private fun writeRow(columnIndex: Int, row: XSSFRow, value: String, style: XSSFC
         setCellValue(value)
         cellStyle = style
     }
-}
+}*/
