@@ -1,6 +1,8 @@
 package com.example.transportdocumentscanner.ui.Presentation.ViewModels
 
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.example.transportdocumentscanner.ui.Data.Export.ExportExcel
 import com.example.transportdocumentscanner.ui.Domain.Validations.ValidationResult
@@ -109,6 +111,7 @@ class DocumentViewModel : ViewModel() {
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun writeExcel(context: android.content.Context, doc: DocumentState) : Uri? {
         return exportExcel.write(context, doc)
     }
