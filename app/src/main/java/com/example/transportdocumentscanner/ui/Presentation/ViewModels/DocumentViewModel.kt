@@ -54,6 +54,7 @@ class DocumentViewModel : ViewModel() {
         val data = _doc.value
         val errors = mutableMapOf<String, String>()
 
+        //Debemos de validar con regex, dependiendo del tipo de documento del cual se trate
         if(data.idDocument.isBlank()) {
             errors["idDocument"] = "El id es obligatorio"
         }else {
