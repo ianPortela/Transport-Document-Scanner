@@ -88,22 +88,18 @@ class DocumentViewModel : ViewModel() {
         if (data.weight.isBlank()) {
             errors["weight"] = "El Peso es obligatorio"
         }else {
-            if (data.weight.toIntOrNull() == null || data.weight.toInt() <= 0) {
+            if (data.weight.toIntOrNull() == null || data.weight.toInt() <= 0 || data.weight.toInt() >= 50000) {
                 errors["weight"] = "Peso invalido"
             }
         }
 
-        if (data.rate.isBlank()) {
-            errors["rate"] = "La Tarifa es obligatoria"
-        }else {
+        if (!data.rate.isBlank()) {
             if(data.rate.toIntOrNull() == null || data.rate.toInt() <= 0) {
                 errors["rate"] = "Tarifa inválida"
             }
         }
 
-        if (data.amount.isBlank()) {
-            errors["amount"] = "El Importe es obligatorio"
-        }else {
+        if (!data.amount.isBlank()) {
             if(data.amount.toDoubleOrNull() == null || data.amount.toDouble() <= 0){
                 errors["amount"] = "El Importe es invalido"
             }
