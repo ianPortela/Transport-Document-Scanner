@@ -1,17 +1,10 @@
 package com.example.transportdocumentscanner.ui.Presentation.Views
 
-import android.content.ContentResolver
-import android.content.ContentUris
-import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +27,6 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -57,9 +49,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
-import org.apache.poi.xssf.usermodel.XSSFSheet
-import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import java.time.LocalDate
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
@@ -71,19 +60,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.apache.poi.ss.usermodel.BorderStyle
-import org.apache.poi.ss.usermodel.FillPatternType
-import org.apache.poi.ss.usermodel.HorizontalAlignment
-import org.apache.poi.ss.usermodel.IndexedColors
-import org.apache.poi.ss.usermodel.VerticalAlignment
-import org.apache.poi.xssf.usermodel.XSSFCellStyle
-import org.apache.poi.xssf.usermodel.XSSFRow
 import java.time.Instant
 import java.time.ZoneId
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun ManualLoadingScreen(
+    typeDocument: String,
     modifier: Modifier = Modifier.fillMaxSize(),
     navigateToHome: () -> Unit,
     viewModel: DocumentViewModel = DocumentViewModel()) {
@@ -92,7 +75,7 @@ fun ManualLoadingScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    Scaffold(  //Scaffold es necesario para que el Snackbar aparezca bien posicionado
+    Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
@@ -128,6 +111,7 @@ fun ManualLoadingScreen(
             InputFields(
                 doc = doc,
                 viewModel = viewModel,
+                typeDocument = typeDocument,
                 context = context,
                 snackbarHostState = snackbarHostState,
                 scope = scope,
@@ -143,6 +127,7 @@ fun ManualLoadingScreen(
 fun InputFields(
     doc: DocumentState,
     viewModel: DocumentViewModel,
+    typeDocument: String,
     context: Context,
     snackbarHostState: SnackbarHostState,
     scope: CoroutineScope,
@@ -151,7 +136,7 @@ fun InputFields(
 {
     DateField(doc, viewModel)
     doc.errors["date"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -162,7 +147,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["origin"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -173,7 +158,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["destiny"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -184,7 +169,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["distance"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -195,7 +180,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["product"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -206,7 +191,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["weight"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -217,7 +202,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["idDocument"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -228,7 +213,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["rate"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(18.dp))
 
@@ -239,7 +224,7 @@ fun InputFields(
         modifier = Modifier.width(360.dp)
     )
     doc.errors["amount"]?.let {
-        Text(text = it, color = Color.Red)
+        Text(text = it, color = Color.Red, fontSize = 12.sp)
     }
     Spacer(modifier = Modifier.height(40.dp))
 
@@ -248,7 +233,7 @@ fun InputFields(
     Button(
         onClick = {
             scope.launch {
-                val result = viewModel.validate()
+                val result = viewModel.validate(typeDocument)
 
                 if (result.isValid) {
 

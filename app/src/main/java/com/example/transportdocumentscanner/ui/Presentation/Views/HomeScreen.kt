@@ -25,7 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToManualLoading: () -> Unit) {
+fun HomeScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToManualLoading: (String) -> Unit) {
+    val options = listOf("Carta de Porte", "Remito")
+    var selectedOption by remember { mutableStateOf(options[0]) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,14 +38,20 @@ fun HomeScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToManualLoad
         Spacer(modifier = Modifier.height(60.dp))
         TitleApp()
         Spacer(modifier = Modifier.height(65.dp))
-        DropdownMenu()
+        DropdownMenu(
+            options,
+            selectedOption,
+            onOptionSelected = {
+                selectedOption = it
+            }
+        )
         Spacer(modifier = Modifier.height(100.dp))
-        RegistrationMethods(navigateToManualLoading)
+        RegistrationMethods({ navigateToManualLoading(selectedOption) })
     }
 }
 
 @Composable
-fun RegistrationMethods(navigateToManualLoading: () -> Unit) {
+fun RegistrationMethods(navigateToManualLoading: () -> Unit, ) {
     Text(
         text = "Metodos de registro",
         fontSize = 18.sp
@@ -84,11 +93,8 @@ fun ButtonManualRegistration(method: String, navigateTo: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownMenu() {
-
-    val options = listOf("Carta de Porte", "Remito")
+fun DropdownMenu(options: List<String>, selectedOption:String, onOptionSelected:(String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedOption by remember { mutableStateOf(options[0]) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -116,7 +122,7 @@ fun DropdownMenu() {
                 DropdownMenuItem(
                     text = { Text(option) },
                     onClick = {
-                        selectedOption = option
+                        onOptionSelected(option)
                         expanded = false
                     }
                 )

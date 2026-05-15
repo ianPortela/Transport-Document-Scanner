@@ -9,7 +9,6 @@ import com.example.transportdocumentscanner.ui.Domain.Validations.ValidationResu
 import com.example.transportdocumentscanner.ui.Presentation.State.DocumentState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.apache.poi.sl.draw.geom.Context
 
 class DocumentViewModel : ViewModel() {
     private val exportExcel = ExportExcel()
@@ -47,18 +46,14 @@ class DocumentViewModel : ViewModel() {
         _doc.value = DocumentState()
     }
 
-    fun validate () : ValidationResult {
+    fun validate (typeDocument: String) : ValidationResult {
         val data = _doc.value
         val errors = mutableMapOf<String, String>()
 
-        //Debemos de validar con regex, dependiendo del tipo de documento del cual se trate
-        if(data.idDocument.isBlank()) {
-            errors["idDocument"] = "El id es obligatorio"
-        }else {
-            if (data.idDocument.toIntOrNull() == null || data.idDocument.toInt() <= 0) {
-                errors["idDocument"] = "El id es inválido"
-            }
+        if (!isValidId(data.idDocument, typeDocument)) {
+            errors["idDocument"] = "El id es inválido"
         }
+
         if (data.date.isBlank()) {
             errors["date"] = "La fecha es obligatoria"
         }
@@ -109,6 +104,15 @@ class DocumentViewModel : ViewModel() {
             isValid = errors.isEmpty(),
             errors = errors
         )
+    }
+
+    private fun isValidId(idDocument: String, typeDocument: String) : Boolean{
+        val regex = when(typeDocument) {
+            "Remito" -> Regex("^\\d{4}-\\d{8}$")
+            "Carta de Porte" -> Regex("^\\d{8}$")
+            else -> return false
+        }
+        return regex.matches(idDocument)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
