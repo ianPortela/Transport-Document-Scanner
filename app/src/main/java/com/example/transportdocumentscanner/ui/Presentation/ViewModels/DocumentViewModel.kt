@@ -109,7 +109,7 @@ class DocumentViewModel : ViewModel() {
     private fun isValidId(idDocument: String, typeDocument: String) : Boolean{
         val regex = when(typeDocument) {
             "Remito" -> Regex("^\\d{4}-\\d{8}$")
-            "Carta de Porte" -> Regex("^\\d{8}$")
+            "Carta de Porte" -> Regex("^\\d{11}$")
             else -> return false
         }
         return regex.matches(idDocument)
