@@ -20,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow
 import org.apache.poi.xssf.usermodel.XSSFSheet
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class ExportExcel {
 
@@ -27,6 +28,22 @@ class ExportExcel {
     fun write(context: Context, doc: DocumentState): Uri? {
         val fileName = "Registro_Viajes.xlsx"
         val resolver = context.contentResolver
+        val months = mapOf<String, String>(
+            "JANUARY" to "Enero",
+            "FEBRUARY" to "Febrero",
+            "MARCH" to "Marzo",
+            "APRIL" to "Abril",
+            "MAY" to "Mayo",
+            "JUNE" to "Junio",
+            "JULY" to "Julio",
+            "AUGUST" to "Agosto",
+            "SEPTEMBER" to "Septiembre",
+            "OCTOBER" to "Octuble",
+            "NOVEMBER" to "Nobiembre",
+            "DECEMBER" to "Diciembre",
+        )
+
+
 
         //Buscar si el archivo ya existe en Downloads
         val existingUri: Uri? = findExistingFile(resolver, fileName)
@@ -40,9 +57,17 @@ class ExportExcel {
             XSSFWorkbook()
         }
 
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        val selectedDate = LocalDate.parse(doc.date, formatter)
+        val monthName = months[selectedDate.month.toString()]
+
         //Buscar la hoja del mes actual o crearla
-        val monthName = LocalDate.now().month.toString()
         val sheet: XSSFSheet = workbook.getSheet(monthName) ?: workbook.createSheet(monthName)
+
+        //definimos el ancho de la columna
+        for(i in 0..8){
+            sheet.setColumnWidth(i, 6000)
+        }
 
         //Agregar fila al final (no siempre en la 0)
         var newRowIndex = if (sheet.physicalNumberOfRows == 0) 0 else sheet.lastRowNum + 1
@@ -113,9 +138,6 @@ class ExportExcel {
             val newUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
             newUri?.let {
                 resolver.openOutputStream(it).use { outputStream ->
-                    for(i in 0..8){
-                        sheet.setColumnWidth(i, 6000)
-                    }
                     workbook.write(outputStream)
                 }
             }
