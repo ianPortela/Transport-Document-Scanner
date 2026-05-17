@@ -314,11 +314,15 @@ fun DateField(doc: DocumentState, viewModel: DocumentViewModel) {
 
                                 val localDate = Instant
                                     .ofEpochMilli(millis)
-                                    .atZone(ZoneId.systemDefault())
+                                    .atZone(ZoneId.of("UTC"))
                                     .toLocalDate()
 
+                                val day = String.format("%02d", localDate.dayOfMonth)
+                                val month = String.format("%02d", localDate.monthValue)
+                                val year = localDate.year
+
                                 viewModel.onDateChange(
-                                    "${localDate.dayOfMonth}/${localDate.monthValue}/${localDate.year}"
+                                    "${day}/${month}/${year}"
                                 )
                             }
 
