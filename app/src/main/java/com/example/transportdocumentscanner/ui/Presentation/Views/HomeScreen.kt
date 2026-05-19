@@ -25,7 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToManualLoading: (String) -> Unit) {
+fun HomeScreen(
+    modifier: Modifier = Modifier.fillMaxSize(),
+    navigateToManualLoading: (String) -> Unit,
+    navigateToScanner: (String) -> Unit
+) {
     val options = listOf("Carta de Porte", "Remito")
     var selectedOption by remember { mutableStateOf(options[0]) }
 
@@ -46,20 +50,20 @@ fun HomeScreen(modifier: Modifier = Modifier.fillMaxSize(), navigateToManualLoad
             }
         )
         Spacer(modifier = Modifier.height(100.dp))
-        RegistrationMethods({ navigateToManualLoading(selectedOption) })
+        RegistrationMethods({ navigateToManualLoading(selectedOption) }, {navigateToScanner(selectedOption)})
     }
 }
 
 @Composable
-fun RegistrationMethods(navigateToManualLoading: () -> Unit, ) {
+fun RegistrationMethods(navigateToManualLoading: () -> Unit, navigateToScanner: () -> Unit ) {
     Text(
         text = "Metodos de registro",
         fontSize = 18.sp
     )
     ButtonRegistrationMethod("Subir PDF", action = {})
-    ButtonRegistrationMethod("Escanear documento", action = {})
+    ButtonRegistrationMethod("Escanear documento", action = { navigateToScanner() })
     ButtonRegistrationMethod("Subir foto", action = {})
-    ButtonManualRegistration("Registrar manualmente",navigateTo = {navigateToManualLoading()})
+    ButtonManualRegistration("Registrar manualmente",navigateTo = { navigateToManualLoading() })
 }
 
 @Composable

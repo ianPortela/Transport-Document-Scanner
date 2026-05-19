@@ -8,3 +8,5 @@ object Home
 @Serializable
 data class LoadingScreen(val typeDoc: String)
 
+@Serializable
+data class Scanner(val typeDoc: String)
