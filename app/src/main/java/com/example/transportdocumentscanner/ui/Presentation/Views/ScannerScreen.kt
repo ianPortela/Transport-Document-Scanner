@@ -67,7 +67,6 @@ fun ScannerScreen(
         }
     }
 
-    // Navegar fuera cuando se completa todo el flujo
     LaunchedEffect(uiState) {
         if (uiState is ScannerState.Success) {
             onScanComplete((uiState as ScannerState.Success).data)
@@ -92,7 +91,7 @@ fun ScannerScreen(
                             overlayHeightDp = currentField.height.value,
                             screenWidthDp = screenWidthDp,
                             screenHeightDp = screenHeightDp,
-                            onImageCropped = { bitmap -> viewModel.processCapturedImage(bitmap) }
+                            onImageCropped = { bitmap -> viewModel.processCapturedImage(bitmap, typeDoc) }
                         )
                     },
                     shape = CircleShape,
@@ -140,7 +139,7 @@ fun ScannerScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Paso ${currentFieldIndex + 1}/6",
+                        text = "Paso ${currentFieldIndex + 1}/8",
                         color = Color.White,
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -236,10 +235,6 @@ private fun takePictureAndProcess(
                 )
 
                 croppedBitmap?.let { onImageCropped(it) }
-            }
-
-            override fun onError(exception: ImageCaptureException) {
-                // Manejar error de cámara
             }
         }
     )
