@@ -51,7 +51,7 @@ fun NavigationWarapped() {
                     documentViewModel.onProductChange(document.product)
                     documentViewModel.onWeightChange(document.weight.toString())
                     documentViewModel.onRateChange(document.rate.toString())
-                    documentViewModel.onAmountChange((document.distance * document.rate).toString())
+                    documentViewModel.onAmountChange(((document.weight/1000).toInt() * document.rate).toString())
 
 
                     navController.navigate(LoadingScreen(typeDoc = scannerScreen.typeDoc))

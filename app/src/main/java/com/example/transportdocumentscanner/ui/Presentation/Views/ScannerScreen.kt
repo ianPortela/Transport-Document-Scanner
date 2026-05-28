@@ -111,7 +111,6 @@ fun ScannerScreen(
             if (permissionState.status.isGranted) {
                 cameraController.bindToLifecycle(lifecycleOwner)
 
-                // 1. Cámara de fondo
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
                     factory = { ctx ->
@@ -126,13 +125,11 @@ fun ScannerScreen(
                     }
                 )
 
-                // 2. Overlay oscurecido con el recorte dinámico
                 ScannerOverlay(
                     frameWidth = currentField.width,
                     frameHeight = currentField.height
                 )
 
-                // 3. Indicador superior de qué campo capturar
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -151,7 +148,6 @@ fun ScannerScreen(
                     )
                 }
 
-                // 4. Loading state
                 if (uiState is ScannerState.Processing) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
@@ -176,13 +172,12 @@ fun ScannerOverlay(
     Canvas(
         modifier = modifier
             .fillMaxSize()
-            .graphicsLayer(alpha = 0.99f) // Necesario para que BlendMode.Clear funcione correctamente
+            .graphicsLayer(alpha = 0.99f)
     ) {
         val cornerRadius = CornerRadius(16.dp.toPx(), 16.dp.toPx())
         val canvasWidth = size.width
         val canvasHeight = size.height
 
-        // Fondo oscuro
         drawRect(color = Color.Black.copy(alpha = 0.75f))
 
         val left = (canvasWidth - frameWidthPx) / 2f
@@ -190,7 +185,6 @@ fun ScannerOverlay(
         val offset = Offset(left, top)
         val frameSize = Size(frameWidthPx, frameHeightPx)
 
-        // Perfora el fondo oscuro (hace transparente el recuadro)
         drawRoundRect(
             color = Color.Transparent,
             topLeft = offset,
@@ -199,7 +193,6 @@ fun ScannerOverlay(
             blendMode = BlendMode.Clear
         )
 
-        // Borde blanco del recuadro
         drawRoundRect(
             color = Color.White,
             topLeft = offset,
@@ -210,7 +203,6 @@ fun ScannerOverlay(
     }
 }
 
-// Función auxiliar para capturar
 private fun takePictureAndProcess(
     cameraController: LifecycleCameraController,
     context: android.content.Context,
@@ -226,7 +218,6 @@ private fun takePictureAndProcess(
         mainExecutor,
         object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
-                // Ejecutar el recorte
                 val croppedBitmap = cropImageToBoundingBox(
                     imageProxy = image,
                     overlayWidthDp = overlayWidthDp,

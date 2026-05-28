@@ -61,7 +61,7 @@ class ScannerViewModel : ViewModel() {
 
 
     private fun extractFieldData(field: DocumentField, text: String, typeDoc: String): String? {
-        val cleanText = text.replace("\n", " ").trim()
+        val cleanText = text.replace("\n", " ").substringAfter(":").trim()
         if (cleanText.isEmpty()) return null
 
         return when (field) {
@@ -84,14 +84,17 @@ class ScannerViewModel : ViewModel() {
 
                 match?.let { "${it.groupValues[1]}/${it.groupValues[2]}/${it.groupValues[3]}" }
             }
-            DocumentField.ORIGIN, DocumentField.DESTINY -> {
-                
+            DocumentField.ORIGIN -> {
+
                 cleanText.substringAfter(":")
+            }
+            DocumentField.DESTINY -> {
+                cleanText.substringAfter("-")
             }
             DocumentField.DISTANCE, DocumentField.WEIGHT, DocumentField.RATE -> {
                 val numText = cleanText.replace("O", "0", ignoreCase = true)
 
-                val regex = Regex("""^-?\d+$""")
+                val regex = Regex("""\d+""")
                 val match = regex.find(numText)
                 match?.value
             }
@@ -119,7 +122,6 @@ class ScannerViewModel : ViewModel() {
             _currentFieldIndex.value += 1
             _uiState.update { ScannerState.Idle }
         } else {
-            // Fin del flujo
             _uiState.update { ScannerState.Success(scannedData) }
         }
     }

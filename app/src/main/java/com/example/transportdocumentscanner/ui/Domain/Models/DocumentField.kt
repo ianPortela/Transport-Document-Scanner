@@ -5,12 +5,12 @@ import androidx.compose.ui.unit.dp
 
 enum class DocumentField(val title: String, val width: Dp, val height: Dp) {
 
-    ID_DOCUMENT("Nro. Documento", 200.dp, 60.dp),
-    DATE("Fecha (DD/MM/YYYY)", 180.dp, 60.dp),
+    ID_DOCUMENT("Nro. Documento", 200.dp, 50.dp),
+    DATE("Fecha (DD/MM/YYYY)", 180.dp, 50.dp),
     ORIGIN("Origen", 260.dp, 50.dp),
     DESTINY("Destino", 260.dp, 50.dp),
-    DISTANCE("Distancia (km)", 150.dp, 60.dp),
-    WEIGHT("Peso (kg)", 150.dp, 60.dp),
-    PRODUCT("Producto", 250.dp, 60.dp),
-    RATE("Tarifa", 150.dp, 60.dp)
+    DISTANCE("Distancia (km)", 150.dp, 50.dp),
+    WEIGHT("Peso (kg)", 150.dp, 50.dp),
+    PRODUCT("Producto", 250.dp, 50.dp),
+    RATE("Tarifa", 150.dp, 50.dp)
 }
