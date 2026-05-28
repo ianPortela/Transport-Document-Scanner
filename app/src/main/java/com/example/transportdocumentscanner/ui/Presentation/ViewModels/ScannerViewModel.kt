@@ -33,7 +33,7 @@ class ScannerViewModel : ViewModel() {
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
 
-    fun processCapturedImage(bitmap: Bitmap) {
+    fun processCapturedImage(bitmap: Bitmap, typeDoc: String) {
         viewModelScope.launch {
             _uiState.update { ScannerState.Processing }
             try {
@@ -41,7 +41,7 @@ class ScannerViewModel : ViewModel() {
                 val result = recognizer.process(image).await()
                 val rawText = result.text
 
-                val validData = extractFieldData(currentField, rawText)
+                val validData = extractFieldData(currentField, rawText, typeDoc)
 
                 if (validData != null) {
                     saveFieldData(currentField, validData)
@@ -59,21 +59,34 @@ class ScannerViewModel : ViewModel() {
     }
 
 
-    private fun extractFieldData(field: DocumentField, text: String): String? {
+    private fun extractFieldData(field: DocumentField, text: String, typeDoc: String): String? {
         val cleanText = text.replace("\n", " ").trim()
         if (cleanText.isEmpty()) return null
 
         return when (field) {
-            DocumentField.FECHA -> {
+            DocumentField.ID_DOCUMENT -> {
+                if(typeDoc.equals("Carta de Porte")) {
+                    val regex = Regex("""(?<!\d)\d{11}(?!\d)""")
+                    val match = regex.find(cleanText)
+
+                    match?.value
+                }else {
+                    val regex = Regex("""(?<!\d)\d{4}-\d{8}(?!\d)""")
+                    val match = regex.find(cleanText)
+
+                    match?.value
+                }
+            }
+            DocumentField.DATE -> {
                 val regex = Regex("""(\d{2})\s*[-/]\s*(\d{2})\s*[-/]\s*(\d{4})""")
                 val match = regex.find(cleanText)
 
                 match?.let { "${it.groupValues[1]}/${it.groupValues[2]}/${it.groupValues[3]}" }
             }
-            DocumentField.DISTANCIA, DocumentField.PESO -> {
-                val numText = cleanText.replace("O", "0", ignoreCase = true).replace(",", ".")
+            DocumentField.DISTANCE, DocumentField.WEIGHT, DocumentField.RATE -> {
+                val numText = cleanText.replace("O", "0", ignoreCase = true)
 
-                val regex = Regex("""\d+(\.\d+)?""")
+                val regex = Regex("""^-?\d+$""")
                 val match = regex.find(numText)
                 match?.value
             }
@@ -85,12 +98,14 @@ class ScannerViewModel : ViewModel() {
 
     private fun saveFieldData(field: DocumentField, text: String) {
         scannedData = when (field) {
-            DocumentField.FECHA -> scannedData.copy(date = text)
-            DocumentField.ORIGEN -> scannedData.copy(origin = text)
-            DocumentField.DESTINO -> scannedData.copy(destiny = text)
-            DocumentField.DISTANCIA -> scannedData.copy(distance = text.toIntOrNull() ?: 0)
-            DocumentField.PESO -> scannedData.copy(weight = text.toDoubleOrNull() ?: 0.0)
-            DocumentField.PRODUCTO -> scannedData.copy(product = text)
+            DocumentField.ID_DOCUMENT -> scannedData.copy(idDocument = text)
+            DocumentField.DATE -> scannedData.copy(date = text)
+            DocumentField.ORIGIN -> scannedData.copy(origin = text)
+            DocumentField.DESTINY -> scannedData.copy(destiny = text)
+            DocumentField.DISTANCE -> scannedData.copy(distance = text.toIntOrNull() ?: 0)
+            DocumentField.WEIGHT -> scannedData.copy(weight = text.toDoubleOrNull() ?: 0.0)
+            DocumentField.PRODUCT -> scannedData.copy(product = text)
+            DocumentField.RATE -> scannedData.copy(rate = text.toIntOrNull() ?: 0)
         }
     }
 
