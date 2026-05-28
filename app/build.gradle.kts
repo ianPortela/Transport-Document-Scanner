@@ -49,6 +49,7 @@ dependencies {
     implementation("androidx.camera:camera-view:1.5.3")
     implementation("androidx.camera:camera-core:1.5.3")
     implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

@@ -53,6 +53,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.transportdocumentscanner.ui.Presentation.ViewModels.DocumentViewModel
 import com.example.transportdocumentscanner.ui.Presentation.State.DocumentState
 import com.example.transportdocumentscanner.ui.theme.Purple40
@@ -67,9 +68,10 @@ import java.time.ZoneId
 @Composable
 fun ManualLoadingScreen(
     typeDocument: String,
+    viewModel: DocumentViewModel,
     modifier: Modifier = Modifier.fillMaxSize(),
     navigateToHome: () -> Unit,
-    viewModel: DocumentViewModel = DocumentViewModel()) {
+) {
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }

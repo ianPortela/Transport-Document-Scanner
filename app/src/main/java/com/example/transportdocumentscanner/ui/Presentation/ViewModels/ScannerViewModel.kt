@@ -1,6 +1,7 @@
 package com.example.transportdocumentscanner.ui.viewmodels
 
 import android.graphics.Bitmap
+import androidx.compose.material3.DockedSearchBar
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.transportdocumentscanner.ui.Domain.Models.Document
@@ -82,6 +83,10 @@ class ScannerViewModel : ViewModel() {
                 val match = regex.find(cleanText)
 
                 match?.let { "${it.groupValues[1]}/${it.groupValues[2]}/${it.groupValues[3]}" }
+            }
+            DocumentField.ORIGIN, DocumentField.DESTINY -> {
+                
+                cleanText.substringAfter(":")
             }
             DocumentField.DISTANCE, DocumentField.WEIGHT, DocumentField.RATE -> {
                 val numText = cleanText.replace("O", "0", ignoreCase = true)

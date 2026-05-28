@@ -34,6 +34,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.transportdocumentscanner.ui.Data.Ocr.cropImageToBoundingBox
+import com.example.transportdocumentscanner.ui.Domain.Models.Document
 import com.example.transportdocumentscanner.ui.Presentation.State.ScannerState
 import com.example.transportdocumentscanner.ui.viewmodels.ScannerViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -45,7 +46,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 fun ScannerScreen(
     typeDoc: String,
     viewModel: ScannerViewModel = viewModel(),
-    onScanComplete: (com.example.transportdocumentscanner.ui.Domain.Models.Document) -> Unit
+    onScanComplete: (Document) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current

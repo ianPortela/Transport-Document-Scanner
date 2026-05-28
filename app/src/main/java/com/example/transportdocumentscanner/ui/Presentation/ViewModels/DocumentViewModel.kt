@@ -81,7 +81,7 @@ class DocumentViewModel : ViewModel() {
         if (data.weight.isBlank()) {
             errors["weight"] = "El Peso es obligatorio"
         }else {
-            if (data.weight.toIntOrNull() == null || data.weight.toInt() <= 0 || data.weight.toInt() >= 50000) {
+            if (data.weight.toDoubleOrNull() == null || data.weight.toDouble() <= 0 || data.weight.toDouble() >= 50000) {
                 errors["weight"] = "Peso invalido"
             }
         }
