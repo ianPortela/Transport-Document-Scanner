@@ -7,8 +7,8 @@ enum class DocumentField(val title: String, val width: Dp, val height: Dp) {
 
     ID_DOCUMENT("Nro. Documento", 200.dp, 60.dp),
     DATE("Fecha (DD/MM/YYYY)", 180.dp, 60.dp),
-    ORIGIN("Origen", 250.dp, 60.dp),
-    DESTINY("Destino", 250.dp, 60.dp),
+    ORIGIN("Origen", 260.dp, 50.dp),
+    DESTINY("Destino", 260.dp, 50.dp),
     DISTANCE("Distancia (km)", 150.dp, 60.dp),
     WEIGHT("Peso (kg)", 150.dp, 60.dp),
     PRODUCT("Producto", 250.dp, 60.dp),
