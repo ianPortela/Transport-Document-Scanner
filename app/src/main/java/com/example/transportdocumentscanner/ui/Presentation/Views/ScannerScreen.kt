@@ -2,23 +2,19 @@ package com.example.transportdocumentscanner.ui.Presentation.Views
 
 import android.Manifest
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -28,20 +24,42 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.transportdocumentscanner.ui.Data.Ocr.cropImageToBoundingBox
+import com.example.transportdocumentscanner.ui.Presentation.State.ScannerState
+import com.example.transportdocumentscanner.ui.viewmodels.ScannerViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ScannerScreen(typeDoc: String) {
+fun ScannerScreen(
+    typeDoc: String,
+    viewModel: ScannerViewModel = viewModel(),
+    onScanComplete: (com.example.transportdocumentscanner.ui.Domain.Models.Document) -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val configuration = LocalConfiguration.current
+
+    val screenWidthDp = configuration.screenWidthDp.toFloat()
+    val screenHeightDp = configuration.screenHeightDp.toFloat()
+
     val permissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
+    val uiState by viewModel.uiState.collectAsState()
+    val currentFieldIndex by viewModel.currentFieldIndex.collectAsState()
+    val currentField = viewModel.currentField
+
+    val cameraController = remember { LifecycleCameraController(context) }
 
     LaunchedEffect(Unit) {
         if (!permissionState.status.isGranted) {
@@ -49,60 +67,97 @@ fun ScannerScreen(typeDoc: String) {
         }
     }
 
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraController = remember {
-        LifecycleCameraController(context)
-    }
-
-    // Calculamos el tamaño del recuadro dependiendo del campo a escanear.
-    // Esto evita hardcodear y te permite escalar la app fácilmente.
-    val (frameWidth, frameHeight) = remember(typeDoc) {
-        when (typeDoc.lowercase()) {
-            "fecha" -> Pair(150.dp, 50.dp)
-            "ctg" -> Pair(250.dp, 60.dp)
-            "patente" -> Pair(200.dp, 70.dp)
-            "peso" -> Pair(180.dp, 60.dp)
-            else -> Pair(250.dp, 100.dp) // Tamaño por defecto
+    // Navegar fuera cuando se completa todo el flujo
+    LaunchedEffect(uiState) {
+        if (uiState is ScannerState.Success) {
+            onScanComplete((uiState as ScannerState.Success).data)
+        }
+        if (uiState is ScannerState.Error) {
+            Toast.makeText(context, (uiState as ScannerState.Error).message, Toast.LENGTH_SHORT).show()
+            viewModel.resetError()
         }
     }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        floatingActionButtonPosition = FabPosition.Center, // Centramos el botón abajo
+        floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
-            if (permissionState.status.isGranted) {
+            if (permissionState.status.isGranted && uiState !is ScannerState.Processing) {
                 FloatingActionButton(
-                    onClick = { takePicture(cameraController) },
+                    onClick = {
+                        takePictureAndProcess(
+                            cameraController = cameraController,
+                            context = context,
+                            overlayWidthDp = currentField.width.value,
+                            overlayHeightDp = currentField.height.value,
+                            screenWidthDp = screenWidthDp,
+                            screenHeightDp = screenHeightDp,
+                            onImageCropped = { bitmap -> viewModel.processCapturedImage(bitmap) }
+                        )
+                    },
                     shape = CircleShape,
-                    // Margen inferior para que no quede pegado al borde del teléfono
                     modifier = Modifier.padding(bottom = 24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Capturar documento",
+                        contentDescription = "Capturar ${currentField.title}",
                         modifier = Modifier.size(32.dp)
                     )
                 }
             }
         }
     ) { paddingValues ->
-        // Usamos Box para superponer el Overlay encima de la cámara
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (permissionState.status.isGranted) {
                 cameraController.bindToLifecycle(lifecycleOwner)
 
-                // 1. Capa de la Cámara
-                ScannerContent(
-                    modifier = Modifier.fillMaxSize(), // No usamos paddingValues para que la cámara ocupe todo el fondo
-                    cameraController = cameraController
+                // 1. Cámara de fondo
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        PreviewView(ctx).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            scaleType = PreviewView.ScaleType.FILL_CENTER
+                            controller = cameraController
+                        }
+                    }
                 )
 
-                // 2. Capa del Overlay (sombreado + recuadro de recorte)
+                // 2. Overlay oscurecido con el recorte dinámico
                 ScannerOverlay(
-                    frameWidth = frameWidth,
-                    frameHeight = frameHeight
+                    frameWidth = currentField.width,
+                    frameHeight = currentField.height
                 )
+
+                // 3. Indicador superior de qué campo capturar
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 48.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Paso ${currentFieldIndex + 1}/6",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Enfoca: ${currentField.title}",
+                        color = Color.Green,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
+
+                // 4. Loading state
+                if (uiState is ScannerState.Processing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
@@ -121,24 +176,21 @@ fun ScannerOverlay(
     Canvas(
         modifier = modifier
             .fillMaxSize()
-            // graphicsLayer(alpha = 0.99f) es vital para que BlendMode.Clear funcione
-            // sobre esta capa de Compose sin borrar la cámara que está por debajo.
-            .graphicsLayer(alpha = 0.99f)
+            .graphicsLayer(alpha = 0.99f) // Necesario para que BlendMode.Clear funcione correctamente
     ) {
         val cornerRadius = CornerRadius(16.dp.toPx(), 16.dp.toPx())
         val canvasWidth = size.width
         val canvasHeight = size.height
 
-        // 1. Dibujar el fondo semitransparente oscuro
-        drawRect(color = Color.Black.copy(alpha = 0.6f))
+        // Fondo oscuro
+        drawRect(color = Color.Black.copy(alpha = 0.75f))
 
-        // 2. Calcular las coordenadas del centro
         val left = (canvasWidth - frameWidthPx) / 2f
         val top = (canvasHeight - frameHeightPx) / 2f
         val offset = Offset(left, top)
         val frameSize = Size(frameWidthPx, frameHeightPx)
 
-        // 3. "Perforar" el recuadro transparente en el centro
+        // Perfora el fondo oscuro (hace transparente el recuadro)
         drawRoundRect(
             color = Color.Transparent,
             topLeft = offset,
@@ -147,7 +199,7 @@ fun ScannerOverlay(
             blendMode = BlendMode.Clear
         )
 
-        // 4. Dibujar el borde blanco del recuadro
+        // Borde blanco del recuadro
         drawRoundRect(
             color = Color.White,
             topLeft = offset,
@@ -158,24 +210,37 @@ fun ScannerOverlay(
     }
 }
 
-@Composable
-fun ScannerContent(modifier: Modifier = Modifier, cameraController: LifecycleCameraController) {
-    AndroidView(
-        modifier = modifier,
-        factory = { context ->
-            PreviewView(context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
+// Función auxiliar para capturar
+private fun takePictureAndProcess(
+    cameraController: LifecycleCameraController,
+    context: android.content.Context,
+    overlayWidthDp: Float,
+    overlayHeightDp: Float,
+    screenWidthDp: Float,
+    screenHeightDp: Float,
+    onImageCropped: (android.graphics.Bitmap) -> Unit
+) {
+    val mainExecutor = ContextCompat.getMainExecutor(context)
+
+    cameraController.takePicture(
+        mainExecutor,
+        object : ImageCapture.OnImageCapturedCallback() {
+            override fun onCaptureSuccess(image: ImageProxy) {
+                // Ejecutar el recorte
+                val croppedBitmap = cropImageToBoundingBox(
+                    imageProxy = image,
+                    overlayWidthDp = overlayWidthDp,
+                    overlayHeightDp = overlayHeightDp,
+                    screenWidthDp = screenWidthDp,
+                    screenHeightDp = screenHeightDp
                 )
-                // Usamos FIT_CENTER o FILL_CENTER. FILL_CENTER es estándar para escáneres.
-                scaleType = PreviewView.ScaleType.FILL_CENTER
-                controller = cameraController
+
+                croppedBitmap?.let { onImageCropped(it) }
+            }
+
+            override fun onError(exception: ImageCaptureException) {
+                // Manejar error de cámara
             }
         }
     )
-}
-
-fun takePicture(cameraController: LifecycleCameraController) {
-    // Aquí irá la lógica de captura para tu OCR.
 }

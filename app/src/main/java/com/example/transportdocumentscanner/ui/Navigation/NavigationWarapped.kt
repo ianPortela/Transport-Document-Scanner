@@ -33,7 +33,10 @@ fun NavigationWarapped() {
         composable<Scanner> {backStackEntry ->
             val scannerScreen = backStackEntry.toRoute<Scanner>()
             ScannerScreen(
-                typeDoc = scannerScreen.typeDoc
+                typeDoc = scannerScreen.typeDoc,
+                onScanComplete = {document ->
+                    
+                }
             )
         }
     }
